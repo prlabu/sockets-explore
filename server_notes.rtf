@@ -1,0 +1,33 @@
+
+I struggled with the environment and compiling C for quite a while. It took me a while to figure out that it wasn't anaconda, but 
+
+I started with C but realized parsing HTTP requests with C can be difficult, and I 
+
+
+One question that often came up was : when does the TCP three-way handshake take place? From the socket/application perspective, where is that handled? 
+
+I used the PyDocs at https://docs.python.org/3/library/socketserver.html#request-handler-objects for reference in writing the socket
+
+
+To support persistent HTTP Connections, I realized that I had to keep the handle() method from returning. That is, the full exchange needed to occur within the method. 
+
+One question that I had was whether or not RTT was negligible due to the lack of need to travel over the network. Since everything was developed locally, there is little time required to set up a TCP connection. 
+
+I saw that, in standard HTTP/1.1, the connection parameter in the header can take on two values: keep-alive or close. Keep-alive is actually the standard now. 
+
+I found the socketserver confusing because its 'request' objects don't correspond to HTTP requests; they correspond to new connection requests. 
+
+I am somewhat confused by the fact that all modern browsers use persistent connections by default, but the server codes don't directly support it. 
+
+I decided to give a five second window to the client for keep-alive, in which if there are no HTTP reqs then the connection would be closed. 
+
+The index of the server localhost:8080 is the index.html page, which simply asks the user to make the requests. As such, a user can make requests to the objects via browser. Although this wasn't specified in the assignment, it was helpful for development. It was interesting to see how the browser makes the requests, as I was able to see the server opening and closing TCP connections for each of the .mp3 .jpg and .txt options. 
+
+My biggest bug was adding too many new lines to the HTTP header. So, when the audio or picture file was recieved, it included an extra \n and the file became corrupted. 
+
+I read online at multiple sources that the connection is 'over' on the server side if recv() reads zero bytes. However, I was not able to confirm this. I don't believe this ever occurred in my development.
+
+I encountered trouble in appending the headers and the body. I wasn't sure whether I should be using a buffer or simply appending them as strings. I ended up writing to wfile.
+
+I used Python3
+
