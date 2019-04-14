@@ -64,7 +64,7 @@ class HTTPRequestHandler(socketserver.BaseRequestHandler):
 
         print(f'New HTTPreq, Connection type: {req_params["Connection"]}')
         if req_params['Connection'] == 'keep-alive':
-            self.close_connection = False
+            self.close_connection = True
         else:
             self.close_connection = True
 
@@ -108,21 +108,9 @@ class HTTPRequestHandler(socketserver.BaseRequestHandler):
 
         return
 
-
  
 if __name__ == "__main__":
     HOST, PORT = "localhost", 8080
- 
-    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server.bind((HOST, PORT))
-    server.listen(1)
-
-    try:
-        while(1):
-            cli_socket, cli_address = server.accept()
-    except KeyboardInterrupt:
-        print('^C received, shutting down the web server')
-        server.close()
 
     try: 
         # Create the server, binding to localhost on port 8080
@@ -133,7 +121,7 @@ if __name__ == "__main__":
             server.serve_forever()
     except KeyboardInterrupt:
         print('^C received, shutting down the web server')
-        server.socket.close()
+        server.close()
 
 
 
