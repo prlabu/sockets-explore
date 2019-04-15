@@ -13,7 +13,7 @@ class HTTPReq:
     def __init__(self, raw_req):
         self.raw_req = raw_req.decode()
         self.res = {
-            'Version': '',
+            'Version': 'HTTP/1.1',
             'Status': '',
             'Headers': {
                 'Content-Type': ''
@@ -34,63 +34,61 @@ class HTTPReq:
         req_split = re.split(r'\r\n', (self.raw_req))
         req_base = req_split[0]
 
-        # Making sure the request is valid at all 
+        # Making sure the request is at least HTTP
         req_base_mtch = re.match(r'(\w*) (.*) (.*)', req_base)
         if not req_base_mtch:
             print('Invalid request')
-            self.res
-        req_type = req_base_mtch.group(1)
-        req_path = req_base_mtch.group(2)
+            self.res['Status'] = '400 Bad Request'
+            return self.res
+        
+        self.req['Type'] = req_base_mtch.group(1)
+        self.req['Path'] = req_base_mtch.group(2)
 
-        req_params = {}
+        # parse remaining request headers, assumes no body
         for param in req_split[1:]:
             key = param.split(':')[0].strip()
             val = param.split(':')[1].strip()
-            req_params[key] = val
+            self.req['Headers'][key] = val
 
-        print(f'New HTTPreq, Connection type: {req_params["Connection"]}')
-        if req_params['Connection'] == 'keep-alive':
-            self.close_connection = True
-        else:
-            self.close_connection = True
+        if self.req['Type'] == 'GET':
+            if self.req['Path'] == '/' or self.req['Path'] == '/favicon.ico':
+                self.req['Path'] = '/index.html'
+            
+            if self.req['Path'].endswith('.jpg'):
+                self.res['Headers']['Content-Type'] = 'image/jpeg'
+            elif self.req['Path'].endswith('.gif'):
+                self.res['Headers']['Content-Type'] = 'image/gif'   
+            elif self.req['Path'].endswith('.png'):
+                self.res['Headers']['Content-Type'] = 'image/png'                                        
+            elif self.req['Path'].endswith('.html'):
+                self.res['Headers']['Content-Type'] = 'text/html'
+            elif self.req['Path'].endswith('.mp3'):
+                self.res['Headers']['Content-Type'] = 'audio/mp3'    
+            elif self.req['Path'].endswith('.txt'):
+                self.res['Headers']['Content-Type'] = 'text/plain' 
+            else: 
+                print('Unsupported document type')
+                self.res['Status'] = '400 Bad Request'
+                return self.res
+            
+            try:                                              
+                f = open(self.res['Path'][1:], 'rb')
+            except:
+                print('Requested file not found')
+                self.res['Status'] = '400 Bad Request'
+                return self.res
+            else:
+                self.res['Body'] = f.read()
 
-        if req_type == 'GET':
-            if req_path == '/' or req_path == '/favicon.ico':
-                req_path = '/index.html'
-
-            try:
-                if req_path.endswith('.jpg'):
-                    self.http_res['Content-Type'] = 'image/jpeg'
-                elif req_path.endswith('.gif'):
-                    self.http_res['Content-Type'] = 'image/gif'   
-                elif req_path.endswith('.png'):
-                    self.http_res['Content-Type'] = 'image/png'                                        
-                elif req_path.endswith('.html'):
-                    self.http_res['Content-Type'] = 'text/html'
-                elif req_path.endswith('.mp3'):
-                    self.http_res['Content-Type'] = 'audio/mp3'    
-                elif req_path.endswith('.txt'):
-                    self.http_res['Content-Type'] = 'text/plain'                                               
-                
-                f = open(req_path[1:], 'rb')
-
-                to_send = bytearray('HTTP/1.1 200 OK\r\n'.encode())
-                to_send.extend(f'Content-Type: {self.http_res["Content-Type"]}\r\n'.encode())
-                to_send.extend(b'\n')
-                to_send.extend(bytearray(f.read()))
-                return to_send
-
-            except IOError:
-                print(f'invalid path: {req_path}')
-                to_send = bytearray('HTTP/1.1 404 FileNotFound\r\n'.encode())
-                to_send.extend(b'\r\n\n')
-                self.request.sendall(to_send)
-
-        elif req_type == 'POST':
+        elif self.req['Type'] == 'POST':
             # We would normally handle POST reqs here but the client is only requesting info here.
-            return
+            return self.res
         else:
-            print('invalid request type')
+            print('Invalid request type')
+            self.res['Status'] = '400 Bad Request'
+            return self.res
+
+        return self.res
 
 
 try: 
@@ -120,17 +118,19 @@ try:
             try:
                 res = ress[s].get_nowait()
             except queue.Empty:
-                outputs.remove(s)
+                print('ress queue empty - nothing to send')
             else: # executes if no exception is caught
-                to_send = 
-                s.send(next_msg)
-                print(f'Message sent: {next_msg}')
+                to_send = bytearray(f'{res["Version"]} {res["Status"]}\r\n'.encode())
+                for header, value in res['Headers'].items():
+                    to_send.extend(f'{header}: {value}\r\n'.encode())
+                to_send.extend('\n')
+                to_send.extend(bytearray(res['Body']))
+                s.send(to_send)
+                print(f'HTTP res sent: \n{to_send.decode()}')
 
         for s in exceptional:
-            inputs.remove(s)
-            if s in outputs:
-                outputs.remove(s)
+            socks.remove(s)
             s.close()
-            del message_queues[s]
+            del ress[s]
 except:
     server.close()
