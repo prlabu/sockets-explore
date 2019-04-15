@@ -115,10 +115,12 @@ try:
                     socks.append(connection)
                     ress[connection] = queue.Queue()
                 else:
-                    data = s.recv(1024).decode()
+                    msg_len = int.from_bytes(s.recv(4), byteorder='big')
+                    data = s.recv(msg_len).decode()
                     if data:
-                        # print(f'Message recv: {data}')
+                        print(f'Message recv: {data}')
                         reqObj = HTTPReq(data)
+                        # print(f'Req recved: {reqObj.req["Type"]} : {reqObj.req["Path"]}')
                         res = reqObj.get_response() # this will be a response dictionary
                         ress[s].put(res)
                     else:
@@ -145,6 +147,8 @@ try:
                     to_send.extend('\n'.encode())
                     if res['Body']:
                         to_send.extend(bytearray(res['Body']))
+                    to_send_len = len(to_send)
+                    s.send(to_send_len.to_bytes(4, byteorder='big'))
                     s.sendall(to_send)
                     # print(f'HTTP res sent: \n{to_send.decode()}')
                     if res['Headers']['Connection'].lower() == 'close'.lower():

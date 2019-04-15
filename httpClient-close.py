@@ -11,7 +11,11 @@ reqs = [req1, req2, req3]
 for req in reqs:
     cli = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     cli.connect(('localhost', 8080))
+    
+    req_len = len(req.encode())
+    cli.send(req_len.to_bytes(4, byteorder='big'))
     cli.sendall(req.encode())
+    
     print(f'Req sent: \n{req}\n')
     res = cli.recv(1024)
     print(f'Obj recv\n')

@@ -22,7 +22,8 @@ cli.connect(('localhost', 8080))
 while True:
     readable, writeable, exceptions = select.select([cli], [cli], [cli], 1)
     if cli in readable:
-        res = cli.recv(2048).decode()
+        msg_len = int.from_bytes(cli.recv(4), byteorder='big')
+        res = cli.recv(msg_len).decode()
         if not res:
             print('Nothing to recv from client, breaking')
             break
@@ -34,6 +35,9 @@ while True:
     if cli in writeable:
         if not reqs.empty():
             req = reqs.get()
+            req_bytes = req.encode()
+            req_len = len(req_bytes)
+            cli.send(req_len.to_bytes(4, byteorder='big'))
             cli.sendall(req.encode())
             print(f'Req sent: \n{req}\n')
     if cli in exceptions:
