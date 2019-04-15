@@ -105,7 +105,7 @@ class HTTPReq:
 
 try: 
     while socks:
-        readable, writable, exceptional = select.select(socks, socks, socks)
+        readable, writable, exceptional = select.select(socks, socks, socks, 1)
         for s in socks:
             if s in readable:
                 if s is server:
@@ -132,9 +132,10 @@ try:
                 try:
                     res = ress[s].get_nowait()
                 except queue.Empty:
-                    # print('ress queue empty - nothing to send')
+                    print('ress queue empty - nothing to send')
                     pass
                 except KeyError:  # socket s no longer exists - connection closed by client?
+                    print(KeyError)
                     socks.remove(s)
                     del ress[s]
                 else: # executes if no exception is caught
@@ -146,7 +147,14 @@ try:
                         to_send.extend(bytearray(res['Body']))
                     s.sendall(to_send)
                     # print(f'HTTP res sent: \n{to_send.decode()}')
-                    if res['Headers']['Connection'].lower() == 'close'.lower() or (ress[s].empty()):
+                    if res['Headers']['Connection'].lower() == 'close'.lower():
+                        print('Client req connection:close')
+                        print(f'Closing TCP conn with: {s.getpeername()}')
+                        socks.remove(s)
+                        s.close()
+                        del ress[s]
+                    if ress[s].empty():
+                        print('No more data to send to client...')
                         print(f'Closing TCP conn with: {s.getpeername()}')
                         socks.remove(s)
                         s.close()
