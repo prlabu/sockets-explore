@@ -3,9 +3,9 @@ import select, socket, sys, queue, time, argparse
 
 def make_client_keepAlive_requests(num_iters):
 
-    req1 = "GET /plainText.txt HTTP/1.1\r\nConnection: close"
-    req2 = "GET /flat.jpg HTTP/1.1\r\nConnection: close"
-    req3 = "GET /food.mp3 HTTP/1.1\r\nConnection: close"
+    req1 = "GET /flat.jpg HTTP/1.1\r\nConnection: keep-alive"
+    req2 = "GET /food.mp3 HTTP/1.1\r\nConnection: keep-alive"
+    req3 = "GET /plainText.txt HTTP/1.1\r\nConnection: keep-alive"
 
     reqs = queue.Queue() 
 

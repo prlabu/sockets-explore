@@ -126,7 +126,7 @@ try:
                         res = reqObj.get_response() # this will be a response dictionary
                         ress[s].put(res)
                     else:
-                        print(f'No data recved from client: {s.getpeername()}')
+                        # print(f'No data recved from client: {s.getpeername()}')
                         print(f'Closing connection')
                         socks.remove(s)
                         s.close()
@@ -161,9 +161,12 @@ try:
                         del ress[s]
                     elif ress[s].empty():
                         print('No more data to send to client...')
-                        print(f'Closing TCP conn with: {s.getpeername()}')
+                        try:
+                            print(f'Closing TCP conn with: {s.getpeername()}')
+                            s.close()
+                        except OSError: # Meaning client already shut down. 
+                            print('Client already closed the connection.')
                         socks.remove(s)
-                        s.close()
                         del ress[s]
 
             elif s in exceptional:
