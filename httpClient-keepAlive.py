@@ -1,4 +1,4 @@
-import select, socket, sys, queue, time
+import select, socket, sys, queue, time, argparse
 
 def make_client_close_requests(num_iters):
 
@@ -8,7 +8,7 @@ def make_client_close_requests(num_iters):
 
     reqs = queue.Queue() 
 
-    for i in range(num_iters):
+    for _ in range(num_iters):
         reqs.put(req1)
         reqs.put(req2)
         reqs.put(req3)
@@ -68,9 +68,11 @@ if __name__ == "__main__":
     num_requests, total_time = make_client_close_requests(num_iters)
 
     print('\nTotal of ({}) keep-alive requests and responses completed in ({:.2f} ms).\n'.format(num_requests, total_time))
-    outstr = f'{num_requests},{num_requests}\n'
-    with open('keep-alive.csv', 'a') as f: 
-        f.write(outstr)
+    
+    # used for experimentation
+    # outstr = f'{num_requests},{num_requests}\n'
+    # with open('keep-alive.csv', 'a') as f: 
+    #     f.write(outstr)
 
 
 
