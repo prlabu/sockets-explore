@@ -4,9 +4,7 @@ import time
 import queue
 import sys 
 
-
-if __name__ == "__main__":
-    NUM_REQS_TO_SEND = int(sys.argv[1])
+def make_client_keepAlive_requests(num_iters):
 
     req1 = "GET /plainText.txt HTTP/1.1\r\nConnection: close"
     req2 = "GET /flat.jpg HTTP/1.1\r\nConnection: close"
@@ -14,14 +12,13 @@ if __name__ == "__main__":
 
     reqs = queue.Queue() 
 
-
-    for iter in range(NUM_REQS_TO_SEND):
-        reqs.put(req1)
-
-    # for i in range(15):
+    # for iter in range(NUM_REQS_TO_SEND):
     #     reqs.put(req1)
-    #     reqs.put(req2)
-    #     reqs.put(req3)
+
+    for i in range(num_iters):
+        reqs.put(req1)
+        reqs.put(req2)
+        reqs.put(req3)
 
     num_reqs = 0
     num_ress = 0
@@ -45,12 +42,31 @@ if __name__ == "__main__":
 
         cli.close()
 
-    print(f'Total total req ({num_reqs}), total res ({num_ress})')
-    outstr = f'{NUM_REQS_TO_SEND},{1000*(time.time() - start)}\n'
-    print(outstr)
-    with open('keep-close.csv', 'a') as f: 
-        f.write(outstr)
+    timed = 1000*(time.time() - start)
+    return num_reqs, timed
 
+
+
+
+
+
+
+if __name__ == "__main__":
+    # number of iterations to request the three .jpg, .mp3, .txt files
+    num_iters = 1 
+    if len(sys.argv) == 1:
+        pass
+    elif len(sys.argv) == 2:
+        num_iters = int(sys.argv[1])
+    else:
+        raise Exception('Incorrect command line usage. Use "python filename.py [num_iterations]"')
+
+    num_requests, total_time = make_client_keepAlive_requests(num_iters)
+
+    print('\nTotal of ({}) connection:close requests and responses completed in ({:.2f} ms).\n'.format(num_requests, total_time))
+    outstr = f'{num_requests},{num_requests}\n'
+    with open('close.csv', 'a') as f: 
+        f.write(outstr)
 
 
 

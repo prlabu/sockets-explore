@@ -1,9 +1,11 @@
 import select, socket, sys, queue, re
+
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.setblocking(0)
 server.bind(('localhost', 8080))
-server.listen(15)
+server.listen(5)
 print(f'Server listening at port: 8080')
+
 socks = [server]
 reqs = {}
 ress = {}
