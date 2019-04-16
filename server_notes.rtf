@@ -40,8 +40,15 @@ Additionally, within a single TCP connection, it's difficult to receive requests
 One interesting phenomenon that I encountered in testing is that the browser actually never closes the connection, even if it has recieved all of the files dependencies. I found this interesting. This makes me believe that it is more the responsibility of the server to close the TCP connection. Still, I wonder in the real world, who is the manager of the connection?  
 Clearly, the server will not keep a connection open in order to conserve resources. Still, from the client perspective, the server may have more information to serve up and the closing the connectin could decrease the performance of the client program. 
 
-I used Python3
 
+Analysis
+I intended to quantify how much more efficient 'keep-alive' is compared to 'close'. I hypothesized that 'close' would scale about three times quicker than 'keep-alive', with the intuition that opening and closing a TCP connection are each approximately equivalent (in terms of time) to the sending or receiving of an HTTP message. 
+I ran the experiment over a range of number of requests. For 
+Interestingly, there is more fluctuation in the 'close' connections. Whereas the 'keep-alive' connections are almost perfectly linear, the 'close' data points deviate significantly from the trendline. I suspect that this is due to variation in the amount of time to open and close the TCP connection. 
+
+
+
+I used Python3
 
 References used: 
 https://steelkiwi.com/blog/working-tcp-sockets/
