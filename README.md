@@ -1,4 +1,4 @@
-HTTP Server and Clients (Persistent, Non-persistent.)
+HTTP Server and Clients (one Persistent, one Non-persistent)
 ===
 
 The server and clients are implemented in Python3. The only dependences for the server are shown below, all of which should not require installing any external modules. The imports are the same for the client with the exception of time().
