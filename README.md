@@ -11,7 +11,7 @@ To run the server (Unix), use
 ```
 $ python httpServer.py 
 ```
-This should start serving on port 8080, which is printed in terminal. The server prints in termal every time a new client connects, a new HTTP message is received, or a client connection is closed. 
+This should start serving on port 8080, which is printed in terminal. The server prints in terminal every time a new client connects, a new HTTP message is received, or a client connection is closed. 
 
 
 
@@ -21,8 +21,9 @@ $ python httpClient-keepAlive.py 5
 ```
 ... where the call format is 
 ```Bash
-$python httpClient-keepAlive.py [number_iterations]
+$ python httpClient-keepAlive.py [number_iterations]
 ```
+`number_iterations` is the number of times the three message types (.jpg, .mp3, .txt) are retrieved. 
 
 The client should be run on the same host as the server as the server serves on 'localhost'. You should get the following printed  in the terminal if the client made the requests and receieved the responses correctly. 
 ```
